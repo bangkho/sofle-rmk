@@ -1,0 +1,59 @@
+name: Release firmware
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+env:
+  CARGO_TERM_COLOR: always
+  RUST_MIN_STACK: "67108864"
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: thumbv7em-none-eabihf
+
+      # RMK's nRF BLE stack pulls in p256-cortex-m4-sys, whose build script
+      # compiles C with the ARM GNU toolchain.
+      - name: Install ARM GNU toolchain
+        run: sudo apt-get update && sudo apt-get install -y gcc-arm-none-eabi
+
+      - uses: cargo-bins/cargo-binstall@main
+
+      - name: Install cargo-make and flip-link
+        run: cargo binstall cargo-make flip-link --no-confirm
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          key: sofle-rmk
+
+      # The artifact file names embed the crate version, so a tag that drifts
+      # from Cargo.toml would publish misleadingly named firmware.
+      - name: Check the tag matches the crate version
+        run: |
+          set -euo pipefail
+          version=$(sed -n 's/^version = "\(.*\)"/\1/p' Cargo.toml | head -1)
+          tag="v${version}"
+          if [ "$tag" != "$GITHUB_REF_NAME" ]; then
+            echo "tag $GITHUB_REF_NAME does not match Cargo.toml version ($tag)" >&2
+            exit 1
+          fi
+
+      - name: Build UF2
+        run: cargo make uf2 --release
+
+      - name: Publish release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" dist/*.uf2 \
+            --title "$GITHUB_REF_NAME" \
+            --generate-notes
