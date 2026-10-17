@@ -4,7 +4,7 @@ version = "0.1.0"
 authors = ["Ahmad Khoirudin <bangkho.dev@gmail.com>"]
 description = "RMK firmware for the PondLabs Sofle V2 (nice!nano v2 / nRF52840), BLE split"
 edition = "2021"
-license = "MIT OR Apache-2.0"
+license = "MIT"
 
 [dependencies]
 rmk = { version = "0.9", features = [
