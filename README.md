@@ -36,21 +36,30 @@ Feature parity target with the ZMK config in `../sofle-config-zmk`:
 ## Build
 
 ```sh
-# one-time
+# one-time, host-side
 rustup target add thumbv7em-none-eabihf
 cargo install cargo-make flip-link
-brew install --cask gcc-arm-embedded   # needed by p256-cortex-m4-sys
-
-# build both halves
-cargo build --release
-cargo make uf2 --release               # -> sofle-rmk-{central,peripheral}.uf2
+# p256-cortex-m4-sys compiles C, so an ARM GNU toolchain is required:
+brew install --cask gcc-arm-embedded      # needs sudo
+# ...or, without sudo, unpack it into ~/.local/toolchains and put its bin/ on PATH
 ```
+
+Then:
+
+```sh
+cargo build --release          # raw ELF for both halves
+cargo make uf2 --release       # -> dist/sofle-rmk-<version>-{central,peripheral}-<YYYYMMDD-HHMMSS>.uf2
+```
+
+`dist/` is gitignored; the version and build time are part of the file name, so
+nothing is overwritten.
 
 ## Flash
 
 1. Put the board into the bootloader: double-tap reset.
-2. Drag `sofle-rmk-central.uf2` onto the `NICENANO` drive of the **left** half.
-3. Drag `sofle-rmk-peripheral.uf2` onto the **right** half.
+2. Drag `dist/sofle-rmk-<version>-central-<stamp>.uf2` onto the `NICENANO` drive
+   of the **left** half.
+3. Drag `dist/sofle-rmk-<version>-peripheral-<stamp>.uf2` onto the **right** half.
 
 Flash order does not matter; the two halves bond on first boot.
 

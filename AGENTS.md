@@ -64,13 +64,17 @@ Requires `thumbv7em-none-eabihf`, `flip-link`, and an ARM GNU toolchain
 `PATH`, it lives at `~/.local/toolchains/arm-gnu-toolchain-*/bin`.
 
 ```sh
-cargo build --release          # both halves
-cargo make uf2 --release       # sofle-rmk-{central,peripheral}.uf2
+cargo build --release          # raw ELF for both halves
+cargo make uf2 --release       # dist/sofle-rmk-<version>-{central,peripheral}-<YYYYMMDD-HHMMSS>.uf2
 ```
 
+`dist/` is gitignored. The crate version and the build time are part of the file
+name, so successive builds never overwrite each other. Never commit firmware
+images.
+
 There is no host-side unit-test suite; the build *is* the check. A successful
-`cargo build --release` for both bins plus a `check output` with no
-`keyboard.toml` validation error is the acceptance criterion.
+`cargo build --release` for both bins plus a `cargo make uf2 --release` that
+writes both images is the acceptance criterion.
 
 ## Configuration gotchas
 

@@ -1,8 +1,19 @@
+[env]
+# Firmware artifacts land outside version control, flat in dist/, with the crate
+# version and the build time in the file name so no build overwrites another.
+BUILD_STAMP = { script = ["date +%Y%m%d-%H%M%S"] }
+DIST_DIR = { script = ["echo dist"] }
+ARTIFACT = { script = ["echo sofle-rmk-${CARGO_MAKE_CRATE_VERSION}"] }
+
 [tasks.install-llvm-tools]
 install_crate = { rustup_component_name = "llvm-tools" }
 
 [tasks.flip-link]
 install_crate = { crate_name = "flip-link", binary = "flip-link", test_arg = ["-h"] }
+
+[tasks.dist]
+script = ["mkdir -p ${DIST_DIR}"]
+description = "Create dist/ if it does not exist"
 
 [tasks.build]
 command = "cargo"
@@ -12,26 +23,30 @@ dependencies = ["install-llvm-tools", "flip-link"]
 [tasks.objcopy-central]
 install_crate = { crate_name = "cargo-binutils", binary = "cargo", test_arg = ["objcopy", "--help"] }
 command = "cargo"
-args = ["objcopy", "--release", "--bin", "central", "--", "-O", "ihex", "sofle-rmk-central.hex"]
-dependencies = ["build"]
+args = ["objcopy", "--release", "--bin", "central", "--", "-O", "ihex", "${DIST_DIR}/${ARTIFACT}-central-${BUILD_STAMP}.hex"]
+dependencies = ["build", "dist"]
 
 [tasks.objcopy-peripheral]
 install_crate = { crate_name = "cargo-binutils", binary = "cargo", test_arg = ["objcopy", "--help"] }
 command = "cargo"
-args = ["objcopy", "--release", "--bin", "peripheral", "--", "-O", "ihex", "sofle-rmk-peripheral.hex"]
-dependencies = ["build"]
+args = ["objcopy", "--release", "--bin", "peripheral", "--", "-O", "ihex", "${DIST_DIR}/${ARTIFACT}-peripheral-${BUILD_STAMP}.hex"]
+dependencies = ["build", "dist"]
 
 [tasks.uf2-central]
 install_crate = { crate_name = "cargo-hex-to-uf2", binary = "cargo", test_arg = ["hex-to-uf2", "--help"] }
 command = "cargo"
-args = ["hex-to-uf2", "--input-path", "sofle-rmk-central.hex", "--output-path", "sofle-rmk-central.uf2", "--family", "nrf52840"]
+args = ["hex-to-uf2", "--input-path", "${DIST_DIR}/${ARTIFACT}-central-${BUILD_STAMP}.hex", "--output-path", "${DIST_DIR}/${ARTIFACT}-central-${BUILD_STAMP}.uf2", "--family", "nrf52840"]
 dependencies = ["objcopy-central"]
 
 [tasks.uf2-peripheral]
 install_crate = { crate_name = "cargo-hex-to-uf2", binary = "cargo", test_arg = ["hex-to-uf2", "--help"] }
 command = "cargo"
-args = ["hex-to-uf2", "--input-path", "sofle-rmk-peripheral.hex", "--output-path", "sofle-rmk-peripheral.uf2", "--family", "nrf52840"]
+args = ["hex-to-uf2", "--input-path", "${DIST_DIR}/${ARTIFACT}-peripheral-${BUILD_STAMP}.hex", "--output-path", "${DIST_DIR}/${ARTIFACT}-peripheral-${BUILD_STAMP}.uf2", "--family", "nrf52840"]
 dependencies = ["objcopy-peripheral"]
 
 [tasks.uf2]
 dependencies = ["uf2-central", "uf2-peripheral"]
+
+[tasks.echo-dist]
+script = ["ls -1 ${DIST_DIR}"]
+dependencies = ["uf2"]
