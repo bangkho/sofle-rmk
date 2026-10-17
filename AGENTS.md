@@ -72,6 +72,10 @@ cargo make uf2 --release       # dist/sofle-rmk-<version>-{central,peripheral}-<
 name, so successive builds never overwrite each other. Never commit firmware
 images.
 
+Releases are tag-driven: `.github/workflows/release.yml` builds on a `v*` tag and
+attaches the UF2s to a GitHub release. It fails if the tag does not equal
+`v<crate version>`, so bump `version` in `Cargo.toml` and tag to match.
+
 There is no host-side unit-test suite; the build *is* the check. A successful
 `cargo build --release` for both bins plus a `cargo make uf2 --release` that
 writes both images is the acceptance criterion.
