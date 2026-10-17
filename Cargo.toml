@@ -12,6 +12,8 @@ rmk = { version = "0.9", features = [
     "split",
     "async_matrix",
     "adafruit_bl",
+    "display",
+    "ssd1306",
 ] }
 nrf-sdc = { version = "0.4.0", features = [
     "defmt",

@@ -120,6 +120,24 @@ pin_b = "P0_29"
 phase = "default"
 
 # nice!nano v2 gates the OLED rail through EXT_POWER (P0.13): low = display dark.
+[[split.central.output]]
+pin = "P0_13"
+initial_state_active = true
+low_active = false
+
+[split.central.display]
+driver = "ssd1306"
+size = "128x32"
+rotation = 0
+renderer = "OledRenderer"
+
+[split.central.display.protocol.i2c]
+instance = "TWISPI0"
+sda = "P0_17"
+scl = "P0_20"
+address = 0x3C
+
+# Right half, mirrored column order.
 [[split.peripheral]]
 rows = 5
 cols = 6
@@ -135,6 +153,23 @@ col_pins = ["P0_09", "P0_10", "P1_11", "P1_13", "P1_15", "P0_02"]
 pin_a = "P0_29"
 pin_b = "P0_31"
 phase = "default"
+
+[[split.peripheral.output]]
+pin = "P0_13"
+initial_state_active = true
+low_active = false
+
+[split.peripheral.display]
+driver = "ssd1306"
+size = "128x32"
+rotation = 0
+renderer = "OledRenderer"
+
+[split.peripheral.display.protocol.i2c]
+instance = "TWISPI0"
+sda = "P0_17"
+scl = "P0_20"
+address = 0x3C
 
 [rmk]
 # Five BLE host slots, same as the ZMK config's BT_SEL 0..4.
