@@ -32,7 +32,7 @@ layers = 4
 keys = """
 Grave    Kc1      Kc2      Kc3        Kc4       Kc5            Kc6      Kc7      Kc8      Kc9      Kc0        No
 Escape   Q        W        E          R         T              Y        U        I        O        P          Backspace
-Tab      A        S        D          F         G              H        J        K        L        Semicolon  Quote
+Tab      MT(A, LGui)  MT(S, LAlt)  MT(D, LCtrl)  MT(F, LShift)  G              H        MT(J, RShift)  MT(K, RCtrl)  MT(L, RAlt)  MT(Semicolon, RGui)  Quote
 LShift   Z        X        C          V         B     AudioMute  No       N        M        Comma    Dot        Slash      RShift
 LCtrl    LGui     LAlt     MO(1)      Enter            Space    MO(2)    RGui     RAlt     RCtrl
 """
@@ -92,6 +92,15 @@ adjust = 3
 # Tap-hold timing for the home row mods. Flow tap suppresses the hold decision
 # while another key was pressed recently, which is what stops rolls from firing
 # modifiers; unilateral tap does the same for same-hand presses.
+[behavior.morse]
+enable_flow_tap = true
+prior_idle_time = "150ms"
+unilateral_tap = true
+permissive_hold = true
+hold_timeout = "200ms"
+gap_timeout = "180ms"
+
+# Vial keymap editing over USB/BLE; Rynk is the mutually exclusive alternative.
 [host]
 vial_enabled = true
 rynk_enabled = false
