@@ -57,6 +57,30 @@ Scope and limits, stated up front:
 | Right encoder | A = D20, B = D21 |
 | Battery | nice!nano v2 VDDH |
 
+## Prebuilt firmware
+
+You do not need a Rust toolchain to use this keyboard — tagged builds publish
+both images as release assets:
+
+1. Open **Releases** and download the newest
+   `sofle-rmk-<version>-central-<stamp>.uf2` and
+   `sofle-rmk-<version>-peripheral-<stamp>.uf2`.
+2. Follow [Flashing](#flashing) below.
+
+Every push and pull request also runs the `Build firmware` workflow, which
+uploads the same two images under the `sofle-rmk-firmware` artifact on the run
+page — useful for testing an unreleased commit.
+
+To cut a release: bump `version` in `Cargo.toml`, then push a matching tag. The
+`Release firmware` workflow fails the build if the tag and the crate version
+disagree, so tag and firmware names can never drift apart.
+
+```sh
+# version = "0.2.0" in Cargo.toml
+git tag v0.2.0
+git push origin v0.2.0
+```
+
 ## Build
 
 ```sh
@@ -169,6 +193,52 @@ central` to flash and get defmt RTT logs. Not needed for normal use.
 `keyboard.toml` is the single source of truth for the matrix, layout, keymap and
 all peripherals. `vial.json` describes the same layout for the [Vial](https://get.vial.today/)
 keymap editor — keep the two in sync when you change the layout.
+
+## Make it yours
+
+Fork this and edit it for your own board — that is what it is for.
+
+```sh
+gh repo fork bangkho/sofle-rmk --clone          # or: gh repo create my-kb --template bangkho/sofle-rmk --clone
+cd sofle-rmk && git remote set-url origin git@github.com:<you>/sofle-rmk.git
+```
+
+Then, in `keyboard.toml`:
+
+| What | Where |
+|---|---|
+| Identity shown over USB/BLE | `[keyboard]`: `name`, `product_name`, `manufacturer`, `vendor_id`, `product_id` |
+| Which half is the central | swap the `row_offset`/`col_offset` blocks between `[split.central]` and `[[split.peripheral]]` |
+| Wiring | `[split.central.matrix]` / `[split.peripheral.matrix]` `row_pins`/`col_pins`, `row2col = true` if your diodes point the other way |
+| Keys | `[layout].map` plus the `[[keymap.layer]]` blocks — the two must list the same positions in the same order |
+| Encoders / OLED / battery | `input_device.encoder`, `display`, `battery_adc_pin` on each split side |
+| Tap-hold feel | `[behavior.morse]`: lower `hold_timeout` if taps feel late, raise `prior_idle_time` if modifiers fire mid-word |
+
+If you only want to change the **keymap**, you do not have to fork or rebuild at
+all: the firmware speaks [Vial](https://get.vial.today/), so remap live and the
+changes persist in flash.
+
+After any `[layout]` edit, regenerate the Vial definition so the editor and the
+firmware agree:
+
+```sh
+rmkit layout convert --to-vial keyboard.toml -o /tmp/vial.json   # [layout] -> Vial key positions
+# then merge: keep the "layouts" key from that output, restore name/vendorId/productId
+# (rmkit writes placeholders) and the customKeycodes block.
+```
+
+Two things to change before you share your fork:
+
+- **USB IDs** — pick your own `vendor_id`/`product_id` so hosts do not confuse
+  your keyboard with someone else's.
+- **Vial keyboard ID** — `build.rs` starts with the ID from the upstream
+  template. Generate a unique one if you plan to distribute `.vil` files.
+
+Finally, build and flash as above, and tag a release when you are happy:
+
+```sh
+git tag v0.1.0 && git push origin v0.1.0
+```
 
 ## Licence
 
