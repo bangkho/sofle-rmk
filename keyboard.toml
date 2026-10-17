@@ -24,6 +24,9 @@ map = """
 [keymap]
 layers = 4
 
+# Encoder entries are [clockwise, counter-clockwise], ordered central (left)
+# then peripheral (right), matching the encoder definitions further down.
+
 # Layer 0 - base
 [[keymap.layer]]
 keys = """
@@ -33,6 +36,10 @@ Tab      A        S        D          F         G              H        J       
 LShift   Z        X        C          V         B     AudioMute  No       N        M        Comma    Dot        Slash      RShift
 LCtrl    LGui     LAlt     MO(1)      Enter            Space    MO(2)    RGui     RAlt     RCtrl
 """
+encoders = [
+    ["WM(Left, LAlt)", "WM(Right, LAlt)"],
+    ["WM(Z, LGui)", "WM(Z, LGui | LShift)"],
+]
 
 # Layer 1 - lower
 [[keymap.layer]]
@@ -43,6 +50,10 @@ _        SHIFTED(Kc1) SHIFTED(Kc2) SHIFTED(Kc3) SHIFTED(Kc4) SHIFTED(Kc5)  SHIFT
 _        Equal    Minus    SHIFTED(Equal) SHIFTED(LeftBracket) SHIFTED(RightBracket)  _  _  LeftBracket  RightBracket  Semicolon  SHIFTED(Semicolon)  Backslash  _
 _        _        _        _          _         _              _        _        _        _
 """
+encoders = [
+    ["WM(Equal, LGui | LShift)", "WM(Minus, LGui)"],
+    ["Left", "Right"],
+]
 
 # Layer 2 - raise
 [[keymap.layer]]
@@ -53,6 +64,10 @@ _        LAlt     LCtrl    LShift     _         CapsLock       Left     Up      
 _        Undo     Cut      Copy       Paste     _      _         _        _        _        _        _          _          _
 _        _        _        _          _         _              _        _        _        _
 """
+encoders = [
+    ["AudioVolUp", "AudioVolDown"],
+    ["WM(Left, LGui)", "WM(Right, LGui)"],
+]
 
 # Layer 3 - adjust (lower + raise)
 [[keymap.layer]]
@@ -63,6 +78,10 @@ No       No       No       No         No        No             No       No      
 No       No       No       No         No        No     No       No       No       No       No       No         No         No
 No       No       No       No         No               No       No       No       No       No
 """
+encoders = [
+    ["No", "No"],
+    ["No", "No"],
+]
 
 # Lower + raise held together adds the adjust layer.
 [behavior.tri_layer]
@@ -95,6 +114,12 @@ row_pins = ["P0_24", "P1_00", "P0_11", "P1_04", "P1_06"]
 col_pins = ["P0_02", "P1_15", "P1_13", "P1_11", "P0_10", "P0_09"]
 
 # Left rotary encoder: A = D21, B = D20.
+[[split.central.input_device.encoder]]
+pin_a = "P0_31"
+pin_b = "P0_29"
+phase = "default"
+
+# nice!nano v2 gates the OLED rail through EXT_POWER (P0.13): low = display dark.
 [[split.peripheral]]
 rows = 5
 cols = 6
@@ -106,6 +131,11 @@ row_pins = ["P0_24", "P1_00", "P0_11", "P1_04", "P1_06"]
 col_pins = ["P0_09", "P0_10", "P1_11", "P1_13", "P1_15", "P0_02"]
 
 # Right rotary encoder: A = D20, B = D21 (mirrored against the left one).
+[[split.peripheral.input_device.encoder]]
+pin_a = "P0_29"
+pin_b = "P0_31"
+phase = "default"
+
 [rmk]
 # Five BLE host slots, same as the ZMK config's BT_SEL 0..4.
 ble_profiles_num = 5
