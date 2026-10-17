@@ -108,6 +108,9 @@ rows = 5
 cols = 6
 row_offset = 0
 col_offset = 0
+# nice!nano v2 wires the cell to VDDH (the chip's internal 1:5 divider).
+battery_adc_pin = "vddh"
+battery_user_description = "Left"
 
 [split.central.matrix]
 row_pins = ["P0_24", "P1_00", "P0_11", "P1_04", "P1_06"]
@@ -143,6 +146,8 @@ rows = 5
 cols = 6
 row_offset = 0
 col_offset = 6
+battery_adc_pin = "vddh"
+battery_user_description = "Right"
 
 [split.peripheral.matrix]
 row_pins = ["P0_24", "P1_00", "P0_11", "P1_04", "P1_06"]
