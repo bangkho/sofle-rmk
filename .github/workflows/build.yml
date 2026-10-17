@@ -1,0 +1,43 @@
+name: Build firmware
+
+on: [push, pull_request, workflow_dispatch]
+
+env:
+  CARGO_TERM_COLOR: always
+  RUST_MIN_STACK: "67108864"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: thumbv7em-none-eabihf
+
+      # RMK's nRF BLE stack pulls in p256-cortex-m4-sys, whose build script
+      # compiles C with the ARM GNU toolchain.
+      - name: Install ARM GNU toolchain
+        run: sudo apt-get update && sudo apt-get install -y gcc-arm-none-eabi
+
+      - uses: cargo-bins/cargo-binstall@main
+
+      - name: Install cargo-make and flip-link
+        run: cargo binstall cargo-make flip-link --no-confirm
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          key: sofle-rmk
+
+      - name: Build UF2
+        run: cargo make uf2 --release
+
+      - name: Upload firmware
+        uses: actions/upload-artifact@v4
+        with:
+          name: sofle-rmk-firmware
+          path: |
+            sofle-rmk-central.uf2
+            sofle-rmk-peripheral.uf2
+          if-no-files-found: error
