@@ -17,6 +17,30 @@ Feature parity target with the ZMK config in `../sofle-config-zmk`:
 - Vial keymap editing
 - Home row mods
 
+## About
+
+A from-scratch port of this Sofle V2's working ZMK configuration to
+[RMK](https://rmk.rs), the Rust/Embassy keyboard firmware. Everything that is
+configurable lives in one `keyboard.toml`; the Rust side is two 6-line entry
+points (`src/central.rs`, `src/peripheral.rs`), so there is no firmware code to
+maintain when the keymap changes.
+
+Why bother, given the ZMK config in `../sofle-config-zmk` works: RMK keeps the
+whole keyboard — matrix, keymap, encoders, display, battery, BLE — in a single
+declarative file with compile-time validation, and leaves the option of dropping
+to the Rust API for anything the TOML cannot express.
+
+Scope and limits, stated up front:
+
+- **BLE split only.** RMK compiles its wired/serial split module only when the
+  BLE feature is off, and every nRF52840 feature turns BLE on, so a TRRS cable
+  split cannot work on this controller. The host link is USB or BLE; the
+  half-to-half link is always BLE.
+- **Not yet validated on hardware.** The firmware builds for both halves and the
+  UF2s are well-formed, but encoder direction, home-row-mod timing, OLED power
+  and battery readings still need confirming on the actual boards.
+- No RGB: the Sofle V2 PCB has no LEDs, and RMK's RGB keycodes are no-ops.
+
 ## Hardware
 
 | | |
