@@ -12,10 +12,11 @@ Feature parity target with the ZMK config in `../sofle-config-zmk`:
 - Sofle V2 matrix, 60 keys, BLE split
 - 4 layers (base / lower / raise / adjust tri-layer)
 - Left and right rotary encoders
-- SSD1306 128x32 OLED on both halves
+- SSD1306 128x32 OLED on the central half, showing both batteries and the
+  split/host link state (`src/render.rs`); the peripheral has no panel
 - Battery reporting on both halves (nice!nano v2 VDDH)
 - Vial keymap editing
-- Home row mods
+- No home row mods — see [Known issues](#known-issues)
 
 ## About
 
@@ -36,9 +37,11 @@ Scope and limits, stated up front:
   BLE feature is off, and every nRF52840 feature turns BLE on, so a TRRS cable
   split cannot work on this controller. The host link is USB or BLE; the
   half-to-half link is always BLE.
-- **Not yet validated on hardware.** The firmware builds for both halves and the
-  UF2s are well-formed, but encoder direction, home-row-mod timing, OLED power
-  and battery readings still need confirming on the actual boards.
+- **Not finished.** The firmware builds for both halves, flashes and types, but
+  the BLE link is not stable yet — see [Known issues](#known-issues). Treat this
+  as a work in progress, not a daily driver.
+- **No home row mods.** The ZMK config's `MT()` home row was removed while
+  chasing the freeze below; it is not coming back until the freeze is fixed.
 - No RGB: the Sofle V2 PCB has no LEDs, and RMK's RGB keycodes are no-ops.
 
 ## Hardware
@@ -177,7 +180,27 @@ that keycode jump straight into the bootloader on release.
 with a debug probe wired to SWDIO/SWCLK/GND you can `cargo run --release --bin
 central` to flash and get defmt RTT logs. Not needed for normal use.
 
-### Troubleshooting
+## Known issues
+
+**The central half can freeze — not root-caused.** After a while the left
+(central) half stops responding to its own matrix, and the right half goes with
+it, because peripheral key events are routed through the central. No watchdog
+reset, no panic message on a `log`/`usb_log` build — the trace just stops.
+Removing the home row mods did not change it, so `MT()` timing is not the cause.
+Until this is fixed, do not treat this firmware as a daily driver; the ZMK
+config in `../sofle-config-zmk` still works.
+
+The one link problem that *is* understood is a stale bond after moving the
+keyboard off ZMK:
+
+| Symptom | Cause |
+|---|---|
+| Keyboard pairs but drops the link within a second or two, forever; both halves look dead | your computer still holds the ZMK-era bond. RMK logs `Long term key request reply failed, no long term key` and the host retries in a tight loop, which starves the BLE split link too |
+
+Fix: forget the keyboard in the host's Bluetooth settings, then pair again —
+RMK stores its own LTK and reconnects normally after that.
+
+## Troubleshooting
 
 | Symptom | Cause |
 |---|---|
